@@ -1,0 +1,21 @@
+body {
+    background: #161633;
+    background-blend-mode: multiply;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  
+    /**/
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+  }
+  
+
+  
+  .containerSecundario {
+    text-align: center;
+  }
+  

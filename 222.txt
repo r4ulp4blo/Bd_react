@@ -1,0 +1,202 @@
+const [libros, setLibros] = useState([]);
+  const [titulo, setTitulo] = useState("");
+  const [autor, setAutor] = useState("");
+  const [genero, setGenero] = useState("");
+  const [enlaceImg, setEnlaceImg] = useState(" ");
+  const [pdfFile, setPdfFile] = useState(null);
+  const [caracteristicas, setCaracteristicas] = useState("");
+  const [mensaje, setMensaje] = useState("");
+  const [estado, setEstado] = useState("");
+  const [idLibroSeleccionado, setIdLibroSeleccionado] = useState(null);
+
+  const handlePdfChange = (e) => {
+    setPdfFile(e.target.files[0]);
+    setEnlaceImg("");
+  };
+
+  const obtenerLibros = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/libros");
+      setLibros(response.data);
+    } catch (error) {
+      console.error("Error al obtener los libros:", error);
+    }
+  };
+
+  useEffect(() => {
+    obtenerLibros();
+  }, []);
+
+  const handleEliminar = async (id) => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:5000/eliminar-libro/${id}`
+      );
+      if (response.status === 200) {
+        console.log("Libro eliminado con éxito");
+        // Actualiza la lista de libros excluyendo el libro eliminado
+        setLibros(libros.filter((libro) => libro.id_libro !== id));
+      } else {
+        console.error("Error al eliminar el libro");
+      }
+    } catch (error) {
+      console.error("Error al eliminar el libro:", error);
+    }
+  };
+
+  const handleAgregarImagen = (idLibro) => {
+    setIdLibroSeleccionado(idLibro);
+    console.log(idLibro); // Al hacer clic en "Agregar Imagen", establece el ID del libro seleccionado
+  };
+
+  const handleGuardar = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("titulo", titulo);
+      formData.append("autor", autor);
+      formData.append("genero", genero);
+      formData.append("enlaceImg", enlaceImg);
+      formData.append("caracteristicas", caracteristicas);
+      formData.append("pdf", pdfFile);
+      formData.append("estado", estado);
+
+      const response = await axios.post(
+        "http://localhost:3000/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setMensaje("Libro guardado exitosamente.");
+      }
+    } catch (error) {
+      console.error("Error al guardar el libro:", error);
+      setMensaje("Error al guardar el libro.");
+    }
+  };
+
+  return (
+    <div className="container" style={{ width: "1000px" }}>
+      <div className="row justify-content-start">
+        <div className="d-flex">
+          <div className="col-md-5 my-4">
+            <div className="card" style={{ backgroundColor: "gray" }}>
+              <div className="card-body">
+                <h3 className="card-title text-center">
+                  Formulario para Guardar Libro
+                </h3>
+                <form>
+                  <div className="form-group">
+                    <label>Título del Libro:</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={titulo}
+                      onChange={(e) => setTitulo(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Autor del Libro:</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={autor}
+                      onChange={(e) => setAutor(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Género del Libro:</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={genero}
+                      onChange={(e) => setGenero(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Subir PDF:</label>
+                    <input
+                      type="file"
+                      className="form-control-file"
+                      accept=".pdf"
+                      onChange={handlePdfChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Características del Libro:</label>
+                    <textarea
+                      className="form-control"
+                      value={caracteristicas}
+                      onChange={(e) => setCaracteristicas(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Estado:</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={estado}
+                      onChange={(e) => setEstado(e.target.value)}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <button
+                      type="submit"
+                      className="btn btn-primary mt-2 mx-3"
+                      onClick={handleGuardar}
+                    >
+                      Guardar Libro
+                    </button>
+                    {mensaje && <p>{mensaje}</p>}
+                    <a href="/" className="btn btn-primary mt-2">
+                      Regresar
+                    </a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-8 mx-4 my-4">
+            <table className="table table-bordered">
+              <thead className="thead-dark">
+                <tr>
+                  <th>Título</th>
+                  <th>Género</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {libros.map((libro) => (
+                  <tr key={libro.id_libro}>
+                    <td>{libro.titulo}</td>
+                    <td>{libro.genero}</td>
+                    <td>{libro.estado}</td>
+                    <td>
+                      <button
+                        className="btn btn-primary mx-3"
+                        style={{ height: "32px", textAlign: "center" }}
+                        onClick={() => obtenerLibros(libro)}
+                      >
+                        editar
+                      </button>
+                      <button
+                        onClick={() => handleEliminar(libro.id_libro)}
+                        className="btn btn-danger"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
